@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Freight & Logistics | Digital Maturity Assessment</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+:root{font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#182638;background:#f3f6fa}*{box-sizing:border-box}body{margin:0}.wrap{max-width:960px;margin:auto;padding:30px 18px 70px}header{background:#142b48;color:white;padding:35px 0}header .wrap{padding-top:0;padding-bottom:0}h1{font-size:clamp(1.5rem,4vw,2.25rem);margin:6px 0}h2{font-size:1.25rem;margin:0 0 10px}p{line-height:1.55}.sub{color:#d4e1f2}.tag{font-size:.8rem;text-transform:uppercase;letter-spacing:.09em;color:#8ec8f8;font-weight:700}.notice{background:#fff8e7;border-left:4px solid #d89b21;padding:13px 16px;border-radius:6px;margin:20px 0}.panel{background:white;border:1px solid #dce4ed;border-radius:12px;padding:22px;margin:18px 0;box-shadow:0 2px 9px #142b4809}.dimension-head{display:flex;justify-content:space-between;gap:15px;align-items:center}.dim-count{font-size:.85rem;color:#64748b}.desc{color:#52647a;margin-top:0}.question{padding:16px 0;border-top:1px solid #e5ebf2}.question legend{font-weight:650;line-height:1.4;padding:0;margin-bottom:10px}.question fieldset{border:0;padding:0;margin:0;min-width:0}.choice{display:block;border:1px solid #dce4ed;border-radius:7px;padding:10px 12px;margin:7px 0;cursor:pointer;line-height:1.4}.choice:hover{background:#f4f8fc}.choice:has(input:checked){background:#eaf3ff;border-color:#387dc3}.choice input{margin-right:9px;accent-color:#205c9b}button{background:#205c9b;color:white;border:0;border-radius:8px;padding:13px 22px;font-size:1rem;font-weight:700;cursor:pointer}button:hover{background:#174775}button.secondary{background:#e9eff6;color:#18334e}button.secondary:hover{background:#d8e5f2}.actions{display:flex;flex-wrap:wrap;gap:12px;align-items:center}.error{color:#b42318;font-weight:650;margin:12px 0}.score-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}.score{padding:13px;border-radius:8px;background:#f0f5fa}.score strong{display:block;margin-bottom:6px}.score b{font-size:1.3rem}.chart-container{max-width:600px;margin:12px auto}.result-note{background:#eaf3ff;border-left:4px solid #205c9b;padding:14px 16px;border-radius:6px}.small{font-size:.85rem;color:#52647a}footer{color:#52647a;font-size:.85rem;margin-top:30px}#results[hidden]{display:none}@media(max-width:600px){.panel{padding:15px}.wrap{padding-left:12px;padding-right:12px}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><div class="tag">Group project • Working prototype</div><h1>Freight & Logistics Digital Maturity Assessment</h1><p class="sub">Evaluate five capabilities, view your maturity radar chart, and identify strategic priorities.</p></div></header>
+<main class="wrap">
+<div class="notice"><strong>Prototype:</strong> These 15 questions and the numerical interpretation thresholds are placeholders for group review. Replace them with Member B's approved questions and Member A's final interpretation rules before submission.</div>
+<p>Answer all questions using the description that best reflects the organization's <strong>current, observable practices</strong>. Each answer maps to a maturity level from 1 (Ad Hoc) to 5 (Optimizing).</p>
+<form id="assessment" novalidate><div id="questions"></div><div class="panel"><div class="actions"><button type="submit">Calculate maturity scores</button><button type="button" class="secondary" id="reset">Clear responses</button></div><div id="error" class="error" role="alert" aria-live="polite"></div></div></form>
+<section id="results" class="panel" hidden aria-live="polite"><h2>Your maturity assessment</h2><p class="small">Each dimension score is the arithmetic mean of its question responses (1–5).</p><div id="score-grid" class="score-grid"></div><div class="chart-container"><canvas id="radar" role="img" aria-label="Radar chart of five digital maturity dimensions"></canvas></div><h2>Strategic interpretation</h2><div id="interpretation" class="result-note"></div><p class="small">These results are directional self-assessment indicators, not a certification that every criterion of a maturity stage has been achieved.</p></section>
+<footer>Freight & Logistics Maturity Self-Assessment • Member C prototype • No responses are transmitted to a server or saved in browser storage. Chart.js is loaded from a CDN and requires internet access.</footer>
+</main>
+<script>
+'use strict';
+// EDIT HERE: Replace mock questions with Member B's final 3–4 questions per dimension.
+// Each option MUST have an integer value from 1 to 5. Keep the dimension names identical
+// to Member A's framework and interpretation guide.
+const levels=['Ad Hoc','Developing','Defined','Managed','Optimizing'];
+const dimensions=[
+ {id:'data',name:'Shipment Data Infrastructure',description:'Trusted shipment records across systems and partners.',questions:[
+  {text:'How are shipment identifiers maintained across systems?',options:['Different manually entered IDs in separate systems','Some systems linked, with inconsistent IDs','Common shipment identifier and defined master data','Integrated shipment records monitored for quality','Automated validation and correction at the source']},
+  {text:'How do shipment status events reach operational reporting?',options:['Manual email or spreadsheet updates','Partial interfaces with batch transfers','Documented and standardized data exchange','Near-real-time integrated event feeds','Automatically validated event feeds with exception handling']},
+  {text:'How is shipment data quality managed?',options:['No consistent quality checks','Issues fixed when discovered','Documented standards and assigned owners','Quality metrics monitored and reviewed','Automated prevention and continuous improvement']}
+ ]},
+ {id:'channels',name:'Shipper & Carrier Channels',description:'Digital quoting, booking, tracking, and partner interaction.',questions:[
+  {text:'How do shippers obtain quotes and book shipments?',options:['Primarily phone and email','Portal available to some customers','Consistent portal or API for customers','Digital channels measured and improved','Self-service integrations continuously optimized']},
+  {text:'How do customers receive shipment tracking information?',options:['Request status by phone or email','Limited milestone updates','Consistent tracking across digital channels','Live ETA and proactive delay alerts','Predictive alternatives suggested using network data']},
+  {text:'How are carriers connected to the business?',options:['Manual calls and paperwork','Some large carriers connected via EDI','Standard carrier onboarding and data exchange','Partner integration performance measured','Self-service onboarding and rapid integration']}
+ ]},
+ {id:'automation',name:'Freight Operations Automation',description:'Automation of planning, dispatch, tendering, and invoicing.',questions:[
+  {text:'How are routine dispatch and tendering tasks handled?',options:['Primarily manually','Isolated scripts or local automation','Standardized rules across locations','Automation rates and exceptions monitored','End-to-end workflows automated with exception handling']},
+  {text:'How is invoicing initiated and processed?',options:['Manual preparation and entry','Limited task-specific automation','Standard automated triggers and documented rules','Exceptions logged and regularly improved','Most booking-to-invoice processing automated']},
+  {text:'How is operational automation scaled?',options:['No formal approach','Each site develops its own tools','Common standards and accountable owners','Performance measured across locations','Pilots validated and scaled through repeatable processes']}
+ ]},
+ {id:'ai',name:'AI/ML Deployment',description:'Production use and oversight of predictive or decision models.',questions:[
+  {text:'How are ETA and freight volume forecasts produced?',options:['Manual judgment and spreadsheets','One-off analyst models','At least one model used routinely in production','Model performance monitored against targets','Models continuously optimized within governed workflows']},
+  {text:'How are AI/ML models managed after deployment?',options:['No deployed models','Manual experiments without production oversight','Documented approvals and model owners','Accuracy, drift, and retraining monitored','Continuous evaluation and governed improvement']},
+  {text:'How are AI recommendations used in operations?',options:['Not used','Occasional offline reports','Used in a defined daily workflow','Impact measured with human oversight','Routine low-risk decisions optimized with exception escalation']}
+ ]},
+ {id:'change',name:'Organizational Change Capacity',description:'Digital strategy, leadership accountability, adoption, and training.',questions:[
+  {text:'How are digital investments prioritized?',options:['Reactive purchases after failures','Separate priorities by department','Company-wide roadmap with owners','Monthly business-case and KPI reviews','Ongoing pilot portfolio with stop-or-scale decisions']},
+  {text:'How is employee adoption of new technology supported?',options:['Little training; local champions','Inconsistent training across sites','Standard training and change processes','Adoption metrics monitored regularly','Continuous improvement based on measured adoption']},
+  {text:'How is AI literacy developed across operations?',options:['No organized training','Occasional informal learning','Documented AI literacy program','Training participation and usage measured','Role-based learning continuously improved from outcomes']}
+ ]}
+];
+function renderQuestions(){
+ const root=document.getElementById('questions');root.replaceChildren();
+ dimensions.forEach((dim,di)=>{
+  const panel=document.createElement('section');panel.className='panel';
+  const head=document.createElement('div');head.className='dimension-head';
+  const title=document.createElement('h2');title.textContent=`${di+1}. ${dim.name}`;
+  const count=document.createElement('span');count.className='dim-count';count.textContent=`${dim.questions.length} questions`;
+  head.append(title,count);panel.append(head);
+  const desc=document.createElement('p');desc.className='desc';desc.textContent=dim.description;panel.append(desc);
+  dim.questions.forEach((q,qi)=>{
+   const wrap=document.createElement('div');wrap.className='question';
+   const field=document.createElement('fieldset');const legend=document.createElement('legend');legend.textContent=`${qi+1}. ${q.text}`;field.append(legend);
+   q.options.forEach((opt,oi)=>{
+    const label=document.createElement('label');label.className='choice';
+    const input=document.createElement('input');input.type='radio';input.name=`${dim.id}_${qi}`;input.value=String(oi+1);input.required=true;
+    const txt=document.createTextNode(`${oi+1} — ${levels[oi]}: ${opt}`);label.append(input,txt);field.append(label);
+   });wrap.append(field);panel.append(wrap);
+  });root.append(panel);
+ });
+}
+function calculate(){return dimensions.map(dim=>{
+ const values=dim.questions.map((q,i)=>Number(document.querySelector(`input[name="${dim.id}_${i}"]:checked`).value));
+ return {...dim,score:values.reduce((a,b)=>a+b,0)/values.length};
+});}
+// PROVISIONAL rules. Member A must approve thresholds, profile priority, and fallback.
+function interpret(rows){
+ const byId=Object.fromEntries(rows.map(r=>[r.id,r.score]));
+ const sorted=[...rows].sort((a,b)=>a.score-b.score || dimensions.findIndex(x=>x.id===a.id)-dimensions.findIndex(x=>x.id===b.id));
+ const low=sorted[0].score;const ties=sorted.filter(x=>Math.abs(x.score-low)<1e-9);
+ let name,action;
+ if(rows.every(r=>r.score<=2)){name='Foundational digital maturity gap';action='Prioritize a trusted shipment record, assign an executive owner, and establish consistent data and workflow standards.';}
+ else if(rows.every(r=>r.score>=4)){name='Advanced digital maturity';action='Explore customer-facing digital services and validate new opportunities against measurable shipment and financial outcomes.';}
+ else if(rows.filter(r=>r.id!=='data').every(r=>r.score>=byId.data+1)){name='Shipment data foundation gap';action='Assign a shipment data owner and improve record consistency before scaling data-dependent automation and AI.';}
+ else if(byId.channels>=4 && byId.ai<=2){name='Digitalized but not transforming';action='Pilot one governed predictive model, such as ETA forecasting, and measure its operational impact.';}
+ else if(rows.filter(r=>r.id!=='change').every(r=>r.score>=byId.change+1)){name='Organizational execution gap';action='Give live tools named owners, measurable adoption targets, and a consistent training and review process.';}
+ else {name='Mixed maturity profile';action=`Focus first on ${sorted[0].name} and ${sorted[1].name}; validate the root causes before selecting an investment.`;}
+ const lowest=ties.map(r=>r.name).join(', ');
+ const two=sorted.slice(0,2).map(r=>r.name).join(' and ');
+ return {name,action,lowest,two,ties:ties.length};
+}
+let chart;
+function showResults(rows){
+ const grid=document.getElementById('score-grid');grid.replaceChildren();
+ rows.forEach(r=>{const box=document.createElement('div');box.className='score';const title=document.createElement('strong');title.textContent=r.name;const val=document.createElement('b');val.textContent=`${r.score.toFixed(2)} / 5`;box.append(title,val);grid.append(box);});
+ const result=interpret(rows),out=document.getElementById('interpretation');out.replaceChildren();
+ const heading=document.createElement('h3');heading.textContent=result.name;out.append(heading);
+ const p1=document.createElement('p');p1.textContent=`Two lowest-scoring dimensions (deterministic framework order for ties): ${result.two}.`;out.append(p1);
+ if(result.ties>1){const p=document.createElement('p');p.textContent=`All dimensions tied for the lowest score: ${result.lowest}.`;out.append(p);}
+ const p2=document.createElement('p');p2.textContent=`Recommended next action: ${result.action}`;out.append(p2);
+ const section=document.getElementById('results');section.hidden=false;
+ if(chart)chart.destroy();
+ const canvas=document.getElementById('radar');
+ if(typeof Chart==='undefined'){
+  const p=document.createElement('p');p.className='error';p.textContent='Chart.js could not load. Check your internet connection; numerical results are still available.';canvas.replaceWith(p);return;
+ }
+ chart=new Chart(canvas,{type:'radar',data:{labels:rows.map(r=>r.name),datasets:[{label:'Maturity score',data:rows.map(r=>Number(r.score.toFixed(3))),borderColor:'#205c9b',backgroundColor:'rgba(32,92,155,.17)',pointBackgroundColor:'#205c9b',pointRadius:4}]},options:{responsive:true,maintainAspectRatio:true,scales:{r:{min:0,max:5,ticks:{stepSize:1},pointLabels:{font:{size:11}}}},plugins:{legend:{display:false}}}});
+ section.scrollIntoView({behavior:'smooth',block:'start'});
+}
+document.getElementById('assessment').addEventListener('submit',e=>{
+ e.preventDefault();const missing=[...document.querySelectorAll('.question fieldset')].filter(fs=>!fs.querySelector('input:checked'));
+ const err=document.getElementById('error');
+ if(missing.length){err.textContent=`Please answer all questions (${missing.length} remaining).`;missing[0].scrollIntoView({behavior:'smooth',block:'center'});return;}
+ err.textContent='';showResults(calculate());
+});
+document.getElementById('reset').addEventListener('click',()=>{document.getElementById('assessment').reset();document.getElementById('results').hidden=true;document.getElementById('error').textContent='';window.scrollTo({top:0,behavior:'smooth'});});
+renderQuestions();
+</script>
+</body></html>
